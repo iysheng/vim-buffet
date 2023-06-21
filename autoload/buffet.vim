@@ -21,11 +21,13 @@ function! buffet#update()
     for buffer_id in range(1, largest_buffer_id)
         " Check if we already keep track of this buffer
         let is_present = 0
+        " 检查是否有这个 buffer_id
         if has_key(s:buffers, buffer_id)
             let is_present = 1
         endif
 
         " Skip if a buffer with this id does not exist
+        " 如果指定 id 的 buffer 不存在
         if !buflisted(buffer_id)
             if is_present
                 if buffer_id == s:last_current_buffer_id
@@ -333,6 +335,7 @@ function! s:Render()
     return render
 endfunction
 
+" 渲染入口函数
 function! buffet#render()
     call buffet#update()
     return s:Render()
@@ -350,6 +353,7 @@ function! s:GetBuffer(buffer)
     return btarget
 endfunction
 
+" buffet#bswitch 切换 buffer
 function! buffet#bswitch(index)
     let i = str2nr(a:index) - 1
     if i < 0 || i > len(s:buffer_ids) - 1

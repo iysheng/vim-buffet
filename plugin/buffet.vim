@@ -2,13 +2,24 @@ if exists("g:buffet_loaded")
     finish
 endif
 
+" 标记 vim-buffet 已经加载了
 let g:buffet_loaded = 1
 
+" 从参数选项中检查参数值
 let g:buffet_always_show_tabline = get(g:, "buffet_always_show_tabline", 1)
 
+" 定义一个 autocmd 的 group
+" ~~就是说定义了一个新的 buffet_show_tabline 组，所以可以直接通过函数
+" :doautoall buffet_show_tabline BufRead, 表示在每一次读取 Buffer
+" 的时候就会执行这个组？？？
+" 执行这个命令
 augroup buffet_show_tabline
+    " autocmd 指令, 后面跟的 !  bang 符号表示什么意思？？？
     autocmd!
+    " 针对 VimEnter ..... 这三个事件，都会执行 set showtabline = 2
+    " showtabline = 2 表示总是显示 tab 行
     autocmd VimEnter,BufAdd,TabEnter * set showtabline=2
+" 切换回默认的组
 augroup END
 
 if has("gui") || has("termguicolors")
@@ -66,6 +77,7 @@ if !exists("g:buffet_hidden_buffers")
 endif
 
 let g:buffet_prefix = "Buffet"
+" 初始化全局变量 g: 表示的全局的
 let g:buffet_has_separator = {
             \     "Tab": {
             \         "Tab": g:buffet_separator,
@@ -96,6 +108,7 @@ let g:buffet_buffer_types = [
             \ ]
 
 for s:type in g:buffet_buffer_types
+    " 初始化全局字典
     let g:buffet_has_separator["Tab"][s:type] = g:buffet_separator
     let g:buffet_has_separator[s:type] = {
                 \     "RightTrunc": g:buffet_separator,
@@ -152,6 +165,7 @@ function! s:LinkHi(name, target)
     exec "silent hi! link " . a:name . " " . a:target
 endfunction
 
+" 定义函数 script 型的全局变量
 function! s:SetColors()
     " TODO: try to match user's colorscheme
     " Issue: https://github.com/bagrat/vim-buffet/issues/5
@@ -212,10 +226,12 @@ endfunction
 
 augroup buffet_set_colors
     autocmd!
+    " 检测到 ColorScheme 命令，会执行 SetColors() 函数
     autocmd ColorScheme * call s:SetColors()
+" 切换回默认的组
 augroup end
 
-" Set solors also at the startup
+" Set colors also at the startup
 call s:SetColors()
 
 if has("nvim")
@@ -224,6 +240,7 @@ if has("nvim")
     endfunction
 endif
 
+" 定义函数
 function! buffet#bwipe_nerdtree_filter(bang, buffer)
     let is_in_nt = 0
     if exists("t:NERDTreeBufName")
@@ -241,11 +258,20 @@ endfunction
 
 let g:buffet_bwipe_filters = ["buffet#bwipe_nerdtree_filter"]
 
+" 遍历所有的 tab 页面
 for s:n in range(1, g:buffet_max_plug)
+    " normal map, normal visual select operator-pending
     execute printf("noremap <silent> <Plug>BuffetSwitch(%d) :call buffet#bswitch(%d)<cr>", s:n, s:n)
 endfor
 
+" -bang 表示支持 ! 强制符号
+" -complete=buffer 自动补全 buffer names
+" -nargs=? 允许0个或者1个参数
+"  定义了一个命令 Bw 可以接受 0 个或者 1 个参数
+"  这个命令可以自动补全 buffer 的名称
 command! -bang -complete=buffer -nargs=? Bw call buffet#bwipe(<q-bang>, <q-args>)
+"  定义了一个命令 Bonly 可以接受 0 个或者 1 个参数
 command! -bang -complete=buffer -nargs=? Bonly call buffet#bonly(<q-bang>, <q-args>)
 
+" 执行 buffet#render 函数
 set tabline=%!buffet#render()
